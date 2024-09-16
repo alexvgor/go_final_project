@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alexvgor/go_final_project/pkg/setup"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,6 +58,9 @@ func walkDir(path string, f func(fname string) error) error {
 }
 
 func TestApp(t *testing.T) {
+
+	setup.LoadEnv()
+
 	cmp := func(fname string) error {
 		fbody, err := os.ReadFile(fname)
 		if err != nil {
