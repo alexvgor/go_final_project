@@ -30,15 +30,18 @@ func CreateIndex(db *sql.DB) {
 }
 
 func CreateDbConnection() *sql.DB {
-	appPath, err := os.Executable()
-	if err != nil {
-		slog.Error(fmt.Sprintf("Unable to get executable path - %s", err.Error()))
-		os.Exit(1)
+	dbFile := os.Getenv("TODO_DBFILE")
+	if len(dbFile) == 0 {
+		appPath, err := os.Executable()
+		if err != nil {
+			slog.Error(fmt.Sprintf("Unable to get executable path - %s", err.Error()))
+			os.Exit(1)
+		}
+		dbFile = filepath.Join(filepath.Dir(appPath), "scheduler.db")
 	}
-	dbFile := filepath.Join(filepath.Dir(appPath), "scheduler.db")
 	slog.Debug(fmt.Sprintf("db file path - %s", dbFile))
 
-	_, err = os.Stat(dbFile)
+	_, err := os.Stat(dbFile)
 	var shouldInitDB bool
 	if err != nil {
 		shouldInitDB = true
