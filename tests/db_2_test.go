@@ -5,7 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/jmoiron/sqlx"
+
 	// _ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	_ "modernc.org/sqlite"
@@ -36,6 +38,9 @@ func openDB(t *testing.T) *sqlx.DB {
 }
 
 func TestDB(t *testing.T) {
+
+	setup.LoadEnv()
+
 	db := openDB(t)
 	defer db.Close()
 

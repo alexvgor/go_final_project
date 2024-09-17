@@ -10,8 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/alexvgor/go_final_project/pkg/setup"
-
+	"github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/stretchr/testify/assert"
 )
 
