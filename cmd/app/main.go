@@ -8,15 +8,13 @@ import (
 	"strconv"
 
 	"github.com/alexvgor/go_final_project/internal/db"
-	"github.com/alexvgor/go_final_project/pkg/setup"
+	"github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/alexvgor/go_final_project/tests"
 )
 
 func main() {
 
-	setup.LoadEnv()
-
-	setup.SetLogLevel(os.Getenv("LOG_LEVEL"))
+	setup.Init()
 
 	port := os.Getenv("TODO_PORT")
 	portNumber, err := strconv.Atoi(port)
