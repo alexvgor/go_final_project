@@ -19,13 +19,13 @@ func main() {
 
 	port := setup.GetPort()
 
-	dbConnection := db.CreateDbConnection()
-	if dbConnection != nil {
+	dbConnection, err := db.CreateDbConnection()
+	if err != nil {
+		slog.Error(fmt.Sprintf("db connection was not created due to error - %s", err.Error()))
+		os.Exit(1)
+	} else {
 		slog.Info("db connection was created")
 		defer dbConnection.Close()
-	} else {
-		slog.Error("db connection was not created")
-		os.Exit(1)
 	}
 
 	router := chi.NewRouter()
@@ -33,7 +33,7 @@ func main() {
 
 	slog.Info(fmt.Sprintf("starting app on %d port", port))
 	if err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", port), router); err != nil {
-		slog.Error(fmt.Sprintf("App was down due to error - %s", err.Error()))
+		slog.Error(fmt.Sprintf("app was down due to error - %s", err.Error()))
 		os.Exit(1)
 	}
 }
