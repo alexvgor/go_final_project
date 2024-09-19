@@ -15,11 +15,11 @@ var CUSTOM_LEVELS = map[string]slog.Level{
 
 func SetLogLevel(level string) {
 	if len(level) == 0 {
-		level = "INFO"
+		level = LogLevel
 	}
 	slected_level, level_exists := CUSTOM_LEVELS[strings.ToUpper(level)]
 	if !level_exists {
-		log.Fatal("Invalid logging level was provided - ", level)
+		log.Fatal("invalid logging level was provided - ", level)
 	}
 	slog.SetLogLoggerLevel(slected_level)
 }
