@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 
 	"database/sql"
 
+	"github.com/alexvgor/go_final_project/internal/setup"
 	_ "modernc.org/sqlite"
 )
 
@@ -30,15 +30,8 @@ func CreateIndex(db *sql.DB) {
 }
 
 func CreateDbConnection() *sql.DB {
-	dbFile := os.Getenv("TODO_DBFILE")
-	if len(dbFile) == 0 {
-		appPath, err := os.Executable()
-		if err != nil {
-			slog.Error(fmt.Sprintf("Unable to get executable path - %s", err.Error()))
-			os.Exit(1)
-		}
-		dbFile = filepath.Join(filepath.Dir(appPath), "scheduler.db")
-	}
+
+	dbFile := setup.GetDbPath()
 	slog.Debug(fmt.Sprintf("db file path - %s", dbFile))
 
 	_, err := os.Stat(dbFile)
