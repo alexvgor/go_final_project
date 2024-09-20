@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"fmt"
@@ -7,9 +7,14 @@ import (
 
 	"database/sql"
 
+	"github.com/alexvgor/go_final_project/internal/models"
 	"github.com/alexvgor/go_final_project/internal/setup"
 	_ "modernc.org/sqlite"
 )
+
+type Db struct {
+	db *sql.DB
+}
 
 func create_table(db *sql.DB) error {
 	_, err := db.Exec(`CREATE TABLE scheduler (id INTEGER PRIMARY KEY AUTOINCREMENT, date CHAR(8) NOT NULL DEFAULT "", title VARCHAR(256) NOT NULL DEFAULT "", comment VARCHAR(256) NOT NULL DEFAULT "", repeat VARCHAR(128) NOT NULL DEFAULT "")`)
@@ -32,7 +37,9 @@ func create_index(db *sql.DB) error {
 	return nil
 }
 
-func CreateDbConnection() (*sql.DB, error) {
+func Create() (Db, error) {
+
+	var db Db
 
 	dbFile := setup.GetDbPath()
 	slog.Debug(fmt.Sprintf("db file path - %s", dbFile))
@@ -43,22 +50,39 @@ func CreateDbConnection() (*sql.DB, error) {
 		shouldInitDB = true
 	}
 
-	db, err := sql.Open("sqlite", dbFile)
+	db_connection, err := sql.Open("sqlite", dbFile)
 	if err != nil {
 		slog.Error(fmt.Sprintf("unable to open db file - %s", err.Error()))
-		return nil, err
+		return db, err
 	}
 
 	if shouldInitDB {
-		err = create_table(db)
+		err = create_table(db_connection)
 		if err != nil {
-			return nil, err
+			return db, err
 		}
 	}
+
+	db.db = db_connection
 
 	return db, nil
 }
 
-func CloseDbConnection(db *sql.DB) error {
-	return db.Close()
+func (db Db) Close() error {
+	return db.db.Close()
+}
+
+func (db Db) CreateTask(task *models.Task) (int64, error) {
+	res, err := db.db.Exec("INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)", task.Date, task.Title, task.Comment, task.Repeat)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to insert task - %s", err.Error()))
+		return 0, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to get inserted task id - %s", err.Error()))
+		return 0, err
+	}
+	return id, nil
 }
