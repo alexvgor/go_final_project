@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -82,6 +83,9 @@ type task struct {
 }
 
 func TestAddTask(t *testing.T) {
+
+	setup.LoadEnv()
+
 	db := openDB(t)
 	defer db.Close()
 

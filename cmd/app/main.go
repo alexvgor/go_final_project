@@ -8,9 +8,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/alexvgor/go_final_project/internal/db"
+	"github.com/alexvgor/go_final_project/internal/database"
 	"github.com/alexvgor/go_final_project/internal/routes"
 	"github.com/alexvgor/go_final_project/internal/setup"
+	"github.com/alexvgor/go_final_project/internal/taskmanager"
 )
 
 func main() {
@@ -19,14 +20,16 @@ func main() {
 
 	port := setup.GetPort()
 
-	dbConnection, err := db.CreateDbConnection()
+	db, err := database.Create()
 	if err != nil {
 		slog.Error(fmt.Sprintf("db connection was not created due to error - %s", err.Error()))
 		os.Exit(1)
 	} else {
 		slog.Info("db connection was created")
-		defer dbConnection.Close()
+		defer db.Close()
 	}
+
+	taskmanager.Init(db)
 
 	router := chi.NewRouter()
 	routes.PublicRoutes(router)
