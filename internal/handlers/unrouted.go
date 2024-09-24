@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 )
 
@@ -13,12 +14,12 @@ func NewUnroutedHandler() *UnroutedHandler {
 
 func (h *UnroutedHandler) NotFound() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Не найдено", http.StatusNotFound)
+		RespondError(w, errors.New("не найдено"), http.StatusNotFound)
 	}
 }
 
 func (h *UnroutedHandler) MethodNotAllowed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		RespondError(w, errors.New("метод не поддерживается"), http.StatusMethodNotAllowed)
 	}
 }

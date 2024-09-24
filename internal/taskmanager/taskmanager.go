@@ -2,6 +2,7 @@ package taskmanager
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,6 +26,44 @@ func New(db database.Db) TaskManagerInstance {
 	return tm
 }
 
+func parseTasksIdAsString(tasks []models.Task) []models.ResponseTask {
+	response_tasks := make([]models.ResponseTask, len(tasks))
+	for task_index, task := range tasks {
+		response_tasks[task_index] = models.ResponseTask{
+			Id:      strconv.FormatInt(task.Id, 10),
+			Date:    task.Date,
+			Title:   task.Title,
+			Comment: task.Comment,
+			Repeat:  task.Repeat,
+		}
+	}
+	return response_tasks
+}
+
+func (tm TaskManagerInstance) GetTasks() ([]models.ResponseTask, error) {
+	tasks, err := tm.db.GetTasks()
+	if err != nil {
+		return []models.ResponseTask{}, errors.New("ошибка поиска задач")
+	}
+	return parseTasksIdAsString(tasks), err
+}
+
+func (tm TaskManagerInstance) GetTasksFilteredByDate(search string) ([]models.ResponseTask, error) {
+	tasks, err := tm.db.GetTasksFilteredByDate(search)
+	if err != nil {
+		return []models.ResponseTask{}, errors.New("ошибка поиска задач по времени")
+	}
+	return parseTasksIdAsString(tasks), err
+}
+
+func (tm TaskManagerInstance) GetTasksFilteredByTitleOrComment(search string) ([]models.ResponseTask, error) {
+	tasks, err := tm.db.GetTasksFilteredByTitleOrComment(search)
+	if err != nil {
+		return []models.ResponseTask{}, errors.New("ошибка поиска задач по заголовку или комментарию")
+	}
+	return parseTasksIdAsString(tasks), err
+}
+
 func (tm TaskManagerInstance) CreateTask(task *models.Task) (int64, error) {
 	validated_task, err := validateTask(task)
 	if err != nil {
@@ -33,7 +72,7 @@ func (tm TaskManagerInstance) CreateTask(task *models.Task) (int64, error) {
 
 	id, err := tm.db.CreateTask(validated_task)
 	if err != nil {
-		return 0, errors.New("Ошибка сохранения новой задачи")
+		return 0, errors.New("ошибка сохранения новой задачи")
 	}
 
 	return id, nil
@@ -41,7 +80,7 @@ func (tm TaskManagerInstance) CreateTask(task *models.Task) (int64, error) {
 
 func validateTask(task *models.Task) (*models.Task, error) {
 	if task.Title == "" {
-		return nil, errors.New("Не указан заголовок задачи")
+		return nil, errors.New("не указан заголовок задачи")
 	}
 
 	now := time.Now()
@@ -53,7 +92,7 @@ func validateTask(task *models.Task) (*models.Task, error) {
 
 	date, err := time.Parse(setup.ParseDateFormat, task.Date)
 	if err != nil {
-		return nil, errors.New("Дата представлена в неверном формате")
+		return nil, errors.New("дата представлена в неверном формате")
 	}
 
 	if date.Format(setup.ParseDateFormat) < today {
@@ -62,7 +101,7 @@ func validateTask(task *models.Task) (*models.Task, error) {
 		} else {
 			next_date, err := NextDate(now, task.Date, task.Repeat)
 			if err != nil {
-				return nil, errors.New("Правило повторения указано в неверном формате")
+				return nil, errors.New("правило повторения указано в неверном формате")
 			}
 			task.Date = next_date
 		}
