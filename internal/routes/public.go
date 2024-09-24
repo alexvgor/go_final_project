@@ -12,6 +12,7 @@ func PublicRoutes(router chi.Router) {
 	router.Route("/api", func(router chi.Router) {
 		router.Route("/nextdate", NextDate)
 		router.Route("/task", Task)
+		router.Route("/tasks", Tasks)
 	})
 
 	Unrouted(router)
