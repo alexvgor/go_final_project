@@ -3,13 +3,16 @@ package routes
 import (
 	"net/http"
 
-	"github.com/alexvgor/go_final_project/internal/handlers"
 	"github.com/go-chi/chi/v5"
 )
 
-func PublicRoutes(router *chi.Mux) {
-	router.Handle("/", http.FileServer(http.Dir("./web")))
+func PublicRoutes(router chi.Router) {
+	router.Handle("/*", http.FileServer(http.Dir("./web")))
 
-	nextDateHandler := handlers.NewNextDateHandler()
-	router.HandleFunc("/api/nextdate", nextDateHandler.Handle())
+	router.Route("/api", func(router chi.Router) {
+		router.Route("/nextdate", NextDate)
+		router.Route("/task", Task)
+	})
+
+	Unrouted(router)
 }
