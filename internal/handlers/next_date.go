@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -20,13 +21,13 @@ func (h *NextDateHandler) Get() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		now, err := time.Parse(setup.ParseDateFormat, r.FormValue("now"))
 		if err != nil {
-			http.Error(w, "Неверный формат времени от которого ищется ближайшая дата", http.StatusBadRequest)
+			RespondErrorUnableToFindNextDate(w, errors.New("неверный формат времени от которого ищется ближайшая дата"))
 			return
 		}
 
 		nextDate, err := taskmanager.NextDate(now, r.FormValue("date"), r.FormValue("repeat"))
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			RespondErrorUnableToFindNextDate(w, err)
 			return
 		}
 

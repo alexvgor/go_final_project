@@ -26,7 +26,7 @@ func (h *TaskHandler) Post() http.HandlerFunc {
 
 		task_id, err := taskmanager.TaskManager.CreateTask(&taskDTO)
 		if err != nil {
-			RespondError(w, err)
+			RespondErrorUnableToCreateTask(w, err)
 			return
 		}
 

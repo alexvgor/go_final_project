@@ -86,3 +86,44 @@ func (db Db) CreateTask(task *models.Task) (int64, error) {
 	}
 	return id, nil
 }
+
+func (db Db) GetTasks() ([]models.Task, error) {
+	row, err := db.db.Query("SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date LIMIT ?", setup.DbQueryLimit)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to get tasks - %s", err.Error()))
+		return nil, err
+	}
+	return parseTaskRows(row)
+}
+
+func (db Db) GetTasksFilteredByDate(date string) ([]models.Task, error) {
+	row, err := db.db.Query("SELECT id, date, title, comment, repeat FROM scheduler WHERE date = ? ORDER BY date LIMIT ?", date, setup.DbQueryLimit)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to get tasks - %s", err.Error()))
+		return nil, err
+	}
+	return parseTaskRows(row)
+}
+
+func (db Db) GetTasksFilteredByTitleOrComment(search string) ([]models.Task, error) {
+	row, err := db.db.Query("SELECT id, date, title, comment, repeat FROM scheduler WHERE title LIKE ? OR comment LIKE ? ORDER BY date LIMIT ?", search, search, setup.DbQueryLimit)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to get tasks - %s", err.Error()))
+		return nil, err
+	}
+	return parseTaskRows(row)
+}
+
+func parseTaskRows(row *sql.Rows) ([]models.Task, error) {
+	tasks := make([]models.Task, 0)
+	for row.Next() {
+		var task models.Task
+		err := row.Scan(&task.Id, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+		if err != nil {
+			slog.Error(fmt.Sprintf("unable to parse tasks row - %s", err.Error()))
+			return tasks, err
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
