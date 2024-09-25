@@ -26,18 +26,30 @@ func New(db database.Db) TaskManagerInstance {
 	return tm
 }
 
+func parseTaskIdAsString(task models.Task) models.ResponseTask {
+	return models.ResponseTask{
+		Id:      strconv.FormatInt(task.Id, 10),
+		Date:    task.Date,
+		Title:   task.Title,
+		Comment: task.Comment,
+		Repeat:  task.Repeat,
+	}
+}
+
 func parseTasksIdAsString(tasks []models.Task) []models.ResponseTask {
 	response_tasks := make([]models.ResponseTask, len(tasks))
 	for task_index, task := range tasks {
-		response_tasks[task_index] = models.ResponseTask{
-			Id:      strconv.FormatInt(task.Id, 10),
-			Date:    task.Date,
-			Title:   task.Title,
-			Comment: task.Comment,
-			Repeat:  task.Repeat,
-		}
+		response_tasks[task_index] = parseTaskIdAsString(task)
 	}
 	return response_tasks
+}
+
+func (tm TaskManagerInstance) GetTask(id int64) (models.ResponseTask, error) {
+	task, err := tm.db.GetTask(id)
+	if err != nil {
+		return models.ResponseTask{}, errors.New("ошибка поиска задачи")
+	}
+	return parseTaskIdAsString(task), err
 }
 
 func (tm TaskManagerInstance) GetTasks() ([]models.ResponseTask, error) {

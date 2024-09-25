@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/alexvgor/go_final_project/internal/models"
 	"github.com/alexvgor/go_final_project/internal/taskmanager"
@@ -20,7 +22,7 @@ func (h *TaskHandler) Post() http.HandlerFunc {
 		var taskDTO models.Task
 		err := json.NewDecoder(r.Body).Decode(&taskDTO)
 		if err != nil {
-			RespondErrorInvalidJson(w)
+			RespondErrorUnableToCreateTask(w, errors.New("ошибка десериализации JSON задачи"))
 			return
 		}
 
@@ -31,5 +33,29 @@ func (h *TaskHandler) Post() http.HandlerFunc {
 		}
 
 		Respond(w, models.Response{Id: task_id})
+	}
+}
+
+func (h *TaskHandler) Get() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id_string := r.URL.Query().Get("id")
+		if len(id_string) == 0 {
+			RespondErrorUnableToGetTask(w, errors.New("не указан идентификатор задачи"))
+			return
+		}
+		id, err := strconv.ParseInt(id_string, 10, 64)
+		if err != nil {
+			RespondErrorUnableToGetTask(w, errors.New("идентификатор задачи указан в неверном формате"))
+			return
+		}
+
+		task, err := taskmanager.TaskManager.GetTask(id)
+		if err != nil {
+			RespondErrorUnableToGetTask(w, err)
+			return
+		}
+
+		Respond(w, task)
 	}
 }
