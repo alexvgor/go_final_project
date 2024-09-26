@@ -59,3 +59,32 @@ func (h *TaskHandler) Get() http.HandlerFunc {
 		Respond(w, task)
 	}
 }
+
+func (h *TaskHandler) Put() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var taskDTO models.ResponseTask
+		err := json.NewDecoder(r.Body).Decode(&taskDTO)
+		if err != nil {
+			RespondErrorUnableToUpdateTask(w, errors.New("ошибка десериализации JSON задачи"))
+			return
+		}
+		id, err := strconv.ParseInt(taskDTO.Id, 10, 64)
+		if err != nil {
+			RespondErrorUnableToUpdateTask(w, errors.New("идентификатор задачи указан в неверном формате"))
+			return
+		}
+		task := models.Task{
+			Id:      id,
+			Date:    taskDTO.Date,
+			Title:   taskDTO.Title,
+			Comment: taskDTO.Comment,
+			Repeat:  taskDTO.Repeat,
+		}
+		err = taskmanager.TaskManager.UpdateTask(&task)
+		if err != nil {
+			RespondErrorUnableToUpdateTask(w, err)
+			return
+		}
+		Respond(w, models.Task{})
+	}
+}

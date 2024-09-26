@@ -101,6 +101,23 @@ func (db Db) GetTask(id int64) (models.Task, error) {
 	return task, err
 }
 
+func (db Db) UpdateTask(task *models.Task) error {
+	res, err := db.db.Exec("UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?", task.Date, task.Title, task.Comment, task.Repeat, task.Id)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to update task by id - %s", err.Error()))
+		return errors.New("задача не обнавлена")
+	}
+	rows_affected, err := res.RowsAffected()
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to confirm that task was updated - %s", err.Error()))
+		return errors.New("ошибка подтверждения изменения")
+	} else if rows_affected == 0 {
+		slog.Error("unable to confirm that task was updated")
+		return errors.New("обновление задачи не привело к изменениям")
+	}
+	return nil
+}
+
 func (db Db) GetTasks() ([]models.Task, error) {
 	row, err := db.db.Query("SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date LIMIT ?", setup.DbQueryLimit)
 	if err != nil {

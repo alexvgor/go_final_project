@@ -13,6 +13,7 @@ type ErrorsStruct struct {
 	UnableToGetTasks     error
 	UnableToCreateTasks  error
 	UnableToGetTask      error
+	UnableToUpdateTask   error
 }
 
 var HandlerErrors = ErrorsStruct{
@@ -20,6 +21,7 @@ var HandlerErrors = ErrorsStruct{
 	UnableToGetTasks:     errors.New("ошибка получения задач"),
 	UnableToCreateTasks:  errors.New("ошибка создания задачи"),
 	UnableToGetTask:      errors.New("ошибка получения задачи"),
+	UnableToUpdateTask:   errors.New("ошибка изменения задачи"),
 }
 
 func Respond(w http.ResponseWriter, v any) {
@@ -34,6 +36,10 @@ func RespondJsonError(w http.ResponseWriter, err error) {
 
 func RespondErrorUnableToGetTasks(w http.ResponseWriter, err error) {
 	RespondJsonError(w, errors.Join(HandlerErrors.UnableToGetTasks, err))
+}
+
+func RespondErrorUnableToUpdateTask(w http.ResponseWriter, err error) {
+	RespondJsonError(w, errors.Join(HandlerErrors.UnableToUpdateTask, err))
 }
 
 func RespondErrorUnableToGetTask(w http.ResponseWriter, err error) {

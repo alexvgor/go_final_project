@@ -59,6 +59,8 @@ type fulltask struct {
 
 func TestEditTask(t *testing.T) {
 
+	setup.LoadEnv()
+
 	db := openDB(t)
 	defer db.Close()
 
