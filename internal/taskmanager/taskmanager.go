@@ -88,6 +88,14 @@ func (tm TaskManagerInstance) GetTask(id int64) (models.ResponseTask, error) {
 	return parseTaskIdAsString(task), err
 }
 
+func (tm TaskManagerInstance) DeleteTask(id int64) error {
+	err := tm.db.DeleteTask(id)
+	if err != nil {
+		return errors.New("ошибка удаления задачи")
+	}
+	return nil
+}
+
 func (tm TaskManagerInstance) GetTasks() ([]models.ResponseTask, error) {
 	tasks, err := tm.db.GetTasks()
 	if err != nil {

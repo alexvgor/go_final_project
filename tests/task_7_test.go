@@ -57,6 +57,9 @@ func TestDone(t *testing.T) {
 }
 
 func TestDelTask(t *testing.T) {
+
+	setup.LoadEnv()
+
 	db := openDB(t)
 	defer db.Close()
 

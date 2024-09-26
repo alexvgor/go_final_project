@@ -66,6 +66,24 @@ func (h *TaskHandler) Get() http.HandlerFunc {
 	}
 }
 
+func (h *TaskHandler) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := getQueryId(r)
+		if err != nil {
+			RespondErrorUnableToDeleteTask(w, err)
+			return
+		}
+
+		err = taskmanager.TaskManager.DeleteTask(id)
+		if err != nil {
+			RespondErrorUnableToDeleteTask(w, err)
+			return
+		}
+
+		Respond(w, models.Response{})
+	}
+}
+
 func (h *TaskHandler) Put() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var taskDTO models.ResponseTask

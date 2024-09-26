@@ -8,6 +8,7 @@ import (
 func Task(router chi.Router) {
 	taskHandler := handlers.NewTaskHandler()
 	router.Post("/done", taskHandler.PostDone())
+	router.Delete("/", taskHandler.Delete())
 	router.Post("/", taskHandler.Post())
 	router.Get("/", taskHandler.Get())
 	router.Put("/", taskHandler.Put())
