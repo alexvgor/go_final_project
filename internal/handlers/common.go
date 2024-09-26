@@ -9,19 +9,21 @@ import (
 )
 
 type ErrorsStruct struct {
-	UnableToFindNextDate error
-	UnableToGetTasks     error
-	UnableToCreateTasks  error
-	UnableToGetTask      error
-	UnableToUpdateTask   error
+	UnableToFindNextDate  error
+	UnableToGetTasks      error
+	UnableToCreateTasks   error
+	UnableToGetTask       error
+	UnableToUpdateTask    error
+	UnableToSetTaskAsDone error
 }
 
 var HandlerErrors = ErrorsStruct{
-	UnableToFindNextDate: errors.New("ошибка получения следующей даты задачи"),
-	UnableToGetTasks:     errors.New("ошибка получения задач"),
-	UnableToCreateTasks:  errors.New("ошибка создания задачи"),
-	UnableToGetTask:      errors.New("ошибка получения задачи"),
-	UnableToUpdateTask:   errors.New("ошибка изменения задачи"),
+	UnableToFindNextDate:  errors.New("ошибка получения следующей даты задачи"),
+	UnableToGetTasks:      errors.New("ошибка получения задач"),
+	UnableToCreateTasks:   errors.New("ошибка создания задачи"),
+	UnableToGetTask:       errors.New("ошибка получения задачи"),
+	UnableToUpdateTask:    errors.New("ошибка изменения задачи"),
+	UnableToSetTaskAsDone: errors.New("ошибка отметки о выполнении задачи"),
 }
 
 func Respond(w http.ResponseWriter, v any) {
@@ -36,6 +38,10 @@ func RespondJsonError(w http.ResponseWriter, err error) {
 
 func RespondErrorUnableToGetTasks(w http.ResponseWriter, err error) {
 	RespondJsonError(w, errors.Join(HandlerErrors.UnableToGetTasks, err))
+}
+
+func RespondErrorUnableToSetTaskAsDone(w http.ResponseWriter, err error) {
+	RespondJsonError(w, errors.Join(HandlerErrors.UnableToSetTaskAsDone, err))
 }
 
 func RespondErrorUnableToUpdateTask(w http.ResponseWriter, err error) {

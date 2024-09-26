@@ -44,6 +44,29 @@ func parseTasksIdAsString(tasks []models.Task) []models.ResponseTask {
 	return response_tasks
 }
 
+func (tm TaskManagerInstance) SetTaskAsDone(id int64) error {
+	task, err := tm.db.GetTask(id)
+	if err != nil {
+		return errors.New("ошибка поиска задачи")
+	}
+
+	if len(task.Repeat) == 0 {
+		return tm.db.DeleteTask(task.Id)
+	}
+
+	task.Date, err = NextDate(time.Now(), task.Date, task.Repeat)
+	if err != nil {
+		return err
+	}
+
+	err = tm.db.UpdateTask(&task)
+	if err != nil {
+		return errors.New("ошибка сохранения изменений задачи")
+	}
+
+	return nil
+}
+
 func (tm TaskManagerInstance) UpdateTask(task *models.Task) error {
 	validated_task, err := validateTask(task)
 	if err != nil {

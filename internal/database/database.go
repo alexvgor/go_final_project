@@ -101,6 +101,15 @@ func (db Db) GetTask(id int64) (models.Task, error) {
 	return task, err
 }
 
+func (db Db) DeleteTask(id int64) error {
+	_, err := db.db.Exec("DELETE FROM scheduler WHERE id = ?", id)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to delete task by id - %s", err.Error()))
+		return errors.New("задача не удалена")
+	}
+	return nil
+}
+
 func (db Db) UpdateTask(task *models.Task) error {
 	res, err := db.db.Exec("UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?", task.Date, task.Title, task.Comment, task.Repeat, task.Id)
 	if err != nil {
