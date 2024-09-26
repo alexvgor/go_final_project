@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -85,6 +86,36 @@ func (db Db) CreateTask(task *models.Task) (int64, error) {
 		return 0, err
 	}
 	return id, nil
+}
+
+func (db Db) GetTask(id int64) (models.Task, error) {
+	var task models.Task
+	row := db.db.QueryRow("SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?", id)
+	err := row.Scan(&task.Id, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return task, errors.New("задача не найдена")
+		}
+		slog.Error(fmt.Sprintf("unable to get task by id - %s", err.Error()))
+	}
+	return task, err
+}
+
+func (db Db) UpdateTask(task *models.Task) error {
+	res, err := db.db.Exec("UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?", task.Date, task.Title, task.Comment, task.Repeat, task.Id)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to update task by id - %s", err.Error()))
+		return errors.New("задача не обнавлена")
+	}
+	rows_affected, err := res.RowsAffected()
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to confirm that task was updated - %s", err.Error()))
+		return errors.New("ошибка подтверждения изменения")
+	} else if rows_affected == 0 {
+		slog.Error("unable to confirm that task was updated")
+		return errors.New("обновление задачи не привело к изменениям")
+	}
+	return nil
 }
 
 func (db Db) GetTasks() ([]models.Task, error) {

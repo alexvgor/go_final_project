@@ -10,17 +10,18 @@ import (
 
 type ErrorsStruct struct {
 	UnableToFindNextDate error
-	InvalidJson          error
-
-	UnableToGetTasks    error
-	UnableToCreateTasks error
+	UnableToGetTasks     error
+	UnableToCreateTasks  error
+	UnableToGetTask      error
+	UnableToUpdateTask   error
 }
 
 var HandlerErrors = ErrorsStruct{
 	UnableToFindNextDate: errors.New("ошибка получения следующей даты задачи"),
-	InvalidJson:          errors.New("ошибка десериализации JSON"),
 	UnableToGetTasks:     errors.New("ошибка получения задач"),
 	UnableToCreateTasks:  errors.New("ошибка создания задачи"),
+	UnableToGetTask:      errors.New("ошибка получения задачи"),
+	UnableToUpdateTask:   errors.New("ошибка изменения задачи"),
 }
 
 func Respond(w http.ResponseWriter, v any) {
@@ -33,12 +34,16 @@ func RespondJsonError(w http.ResponseWriter, err error) {
 	json.NewEncoder(w).Encode(models.Response{Error: err.Error()})
 }
 
-func RespondErrorInvalidJson(w http.ResponseWriter) {
-	RespondJsonError(w, HandlerErrors.InvalidJson)
-}
-
 func RespondErrorUnableToGetTasks(w http.ResponseWriter, err error) {
 	RespondJsonError(w, errors.Join(HandlerErrors.UnableToGetTasks, err))
+}
+
+func RespondErrorUnableToUpdateTask(w http.ResponseWriter, err error) {
+	RespondJsonError(w, errors.Join(HandlerErrors.UnableToUpdateTask, err))
+}
+
+func RespondErrorUnableToGetTask(w http.ResponseWriter, err error) {
+	RespondJsonError(w, errors.Join(HandlerErrors.UnableToGetTask, err))
 }
 
 func RespondErrorUnableToCreateTask(w http.ResponseWriter, err error) {
