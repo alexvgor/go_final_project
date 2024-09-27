@@ -36,3 +36,15 @@ func GetDbPath() string {
 	}
 	return dbFile
 }
+
+func GetSessionSecret() string {
+	secret := os.Getenv("TODO_SECRET")
+	if len(secret) == 0 {
+		secret = SECRET
+	}
+	return secret
+}
+
+func GetSessionPassword() string {
+	return os.Getenv("TODO_PASSWORD")
+}

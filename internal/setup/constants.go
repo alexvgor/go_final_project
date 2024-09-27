@@ -5,3 +5,5 @@ const ParseDateFormat = "20060102"
 const LogLevel = "INFO"
 
 const DbQueryLimit = 50
+
+const SECRET = "default_secret_that_should_never_exist_in_real_project"

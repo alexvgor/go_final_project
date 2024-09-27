@@ -8,12 +8,6 @@ import (
 
 func PublicRoutes(router chi.Router) {
 	router.Handle("/*", http.FileServer(http.Dir("./web")))
-
-	router.Route("/api", func(router chi.Router) {
-		router.Route("/nextdate", NextDate)
-		router.Route("/task", Task)
-		router.Route("/tasks", Tasks)
-	})
-
-	Unrouted(router)
+	router.Route("/api/nextdate", NextDate)
+	router.Route("/api/signin", SignIn)
 }
