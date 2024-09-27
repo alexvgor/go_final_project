@@ -6,7 +6,7 @@ import (
 )
 
 func PrivateRoutes(router chi.Router) {
-	private_router := router.With(session.Session.Validate)
-	private_router.Route("/api/task", Task)
-	private_router.Route("/api/tasks", Tasks)
+	privateRouter := router.With(session.Session.Validate)
+	privateRouter.Route("/api/task", Task)
+	privateRouter.Route("/api/tasks", Tasks)
 }

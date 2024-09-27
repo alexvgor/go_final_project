@@ -13,15 +13,15 @@ import (
 )
 
 func LoadEnv() {
-	var env_file string
+	var envFile string
 	if flag.Lookup("test.v") == nil {
-		env_file = ".env"
+		envFile = ".env"
 	} else {
-		env_file = "../.env"
+		envFile = "../.env"
 	}
-	err := godotenv.Load(env_file)
+	err := godotenv.Load(envFile)
 	if err != nil {
-		if _, ignore_env_file := os.LookupEnv("IGNORE_ENV_FILE"); !ignore_env_file {
+		if _, ignoreEnvFile := os.LookupEnv("IGNORE_ENV_FILE"); !ignoreEnvFile {
 			log.Fatal("Error loading .env file (use IGNORE_ENV_FILE variable to ignore this error)")
 		} else {
 			log.Println("Error loading .env file (was ignored)")

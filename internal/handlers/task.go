@@ -18,11 +18,11 @@ func NewTaskHandler() *TaskHandler {
 }
 
 func getQueryId(r *http.Request) (int64, error) {
-	id_string := r.URL.Query().Get("id")
-	if len(id_string) == 0 {
+	idString := r.URL.Query().Get("id")
+	if len(idString) == 0 {
 		return 0, errors.New("не указан идентификатор задачи")
 	}
-	id, err := strconv.ParseInt(id_string, 10, 64)
+	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
 		return id, errors.New("идентификатор задачи указан в неверном формате")
 	}
@@ -38,13 +38,13 @@ func (h *TaskHandler) Post() http.HandlerFunc {
 			return
 		}
 
-		task_id, err := taskmanager.TaskManager.CreateTask(&taskDTO)
+		taskId, err := taskmanager.TaskManager.CreateTask(&taskDTO)
 		if err != nil {
 			RespondErrorUnableToCreateTask(w, err)
 			return
 		}
 
-		Respond(w, models.Response{Id: task_id})
+		Respond(w, models.Response{Id: taskId})
 	}
 }
 

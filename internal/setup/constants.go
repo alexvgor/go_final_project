@@ -6,4 +6,4 @@ const LogLevel = "INFO"
 
 const DbQueryLimit = 50
 
-const SECRET = "default_secret_that_should_never_exist_in_real_project"
+const Secret = "default_secret_that_should_never_exist_in_real_project"

@@ -3,13 +3,13 @@ package session
 import (
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type SessionInstance struct {
@@ -51,15 +51,20 @@ func (session *SessionInstance) Validate(next http.Handler) http.Handler {
 }
 
 func (session *SessionInstance) TokenValidation(tokenString string) bool {
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			c_err := fmt.Sprintf("Invalid token signing method - %s", token.Header["alg"])
-			slog.Error(c_err)
-			return nil, errors.New(c_err)
+			signingMethodErr := fmt.Sprintf("invalid token signing method - %s", token.Header["alg"])
+			slog.Error(signingMethodErr)
+			return nil, errors.New(signingMethodErr)
 		}
 		return []byte(session.secret), nil
 	})
-	return err == nil
+	if err == nil && token.Valid {
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			return passwordHashValidation(session.password, claims["hash"].(string))
+		}
+	}
+	return false
 }
 
 func (session *SessionInstance) PasswordValidation(password string) (string, error) {
@@ -68,18 +73,28 @@ func (session *SessionInstance) PasswordValidation(password string) (string, err
 		return "", errors.New("неверный пароль")
 	}
 
+	hash, err := hashPassword(session.password)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to create hash for password - %s", err.Error()))
+		return "", errors.New("ошибка создания токена")
+	}
+
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"hash": hash(password),
+		"hash": hash,
 	}).SignedString([]byte(session.secret))
 
 	if err != nil {
+		slog.Error(fmt.Sprintf("unable to create JWToken - %s", err.Error()))
 		return "", errors.New("ошибка создания токена")
 	}
 	return token, nil
 }
 
-func hash(s string) uint32 {
-	h := fnv.New32a()
-	h.Write([]byte(s))
-	return h.Sum32()
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 8)
+	return string(bytes), err
+}
+
+func passwordHashValidation(password string, hash string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
 }

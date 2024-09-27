@@ -40,7 +40,7 @@ func GetDbPath() string {
 func GetSessionSecret() string {
 	secret := os.Getenv("TODO_SECRET")
 	if len(secret) == 0 {
-		secret = SECRET
+		secret = Secret
 	}
 	return secret
 }

@@ -2,6 +2,7 @@ package taskmanager
 
 import (
 	"errors"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -18,12 +19,12 @@ type TaskManagerInstance struct {
 var TaskManager TaskManagerInstance
 
 func Init(db database.Db) {
-	TaskManager = New(db)
+	TaskManager = NewTaskManager(db)
+	slog.Info("taskmanager was inited")
 }
 
-func New(db database.Db) TaskManagerInstance {
-	tm := TaskManagerInstance{db}
-	return tm
+func NewTaskManager(db database.Db) TaskManagerInstance {
+	return TaskManagerInstance{db}
 }
 
 func parseTaskIdAsString(task models.Task) models.ResponseTask {
@@ -37,11 +38,11 @@ func parseTaskIdAsString(task models.Task) models.ResponseTask {
 }
 
 func parseTasksIdAsString(tasks []models.Task) []models.ResponseTask {
-	response_tasks := make([]models.ResponseTask, len(tasks))
-	for task_index, task := range tasks {
-		response_tasks[task_index] = parseTaskIdAsString(task)
+	responseTasks := make([]models.ResponseTask, len(tasks))
+	for taskIndex, task := range tasks {
+		responseTasks[taskIndex] = parseTaskIdAsString(task)
 	}
-	return response_tasks
+	return responseTasks
 }
 
 func (tm TaskManagerInstance) SetTaskAsDone(id int64) error {
@@ -68,11 +69,11 @@ func (tm TaskManagerInstance) SetTaskAsDone(id int64) error {
 }
 
 func (tm TaskManagerInstance) UpdateTask(task *models.Task) error {
-	validated_task, err := validateTask(task)
+	validatedTask, err := validateTask(task)
 	if err != nil {
 		return err
 	}
-	err = tm.db.UpdateTask(validated_task)
+	err = tm.db.UpdateTask(validatedTask)
 	if err != nil {
 		return errors.New("ошибка сохранения изменений задачи")
 	}
@@ -121,12 +122,12 @@ func (tm TaskManagerInstance) GetTasksFilteredByTitleOrComment(search string) ([
 }
 
 func (tm TaskManagerInstance) CreateTask(task *models.Task) (int64, error) {
-	validated_task, err := validateTask(task)
+	validatedTask, err := validateTask(task)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := tm.db.CreateTask(validated_task)
+	id, err := tm.db.CreateTask(validatedTask)
 	if err != nil {
 		return 0, errors.New("ошибка сохранения новой задачи")
 	}
@@ -155,11 +156,11 @@ func validateTask(task *models.Task) (*models.Task, error) {
 		if len(strings.TrimSpace(task.Repeat)) == 0 {
 			task.Date = today
 		} else {
-			next_date, err := NextDate(now, task.Date, task.Repeat)
+			nextDate, err := NextDate(now, task.Date, task.Repeat)
 			if err != nil {
 				return nil, errors.New("правило повторения указано в неверном формате")
 			}
-			task.Date = next_date
+			task.Date = nextDate
 		}
 	}
 
