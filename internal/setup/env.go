@@ -5,19 +5,19 @@ package setup
 */
 
 import (
-	"flag"
 	"log"
 	"os"
+	"testing"
 
 	"github.com/joho/godotenv"
 )
 
 func LoadEnv() {
 	var envFile string
-	if flag.Lookup("test.v") == nil {
-		envFile = ".env"
-	} else {
+	if testing.Testing() {
 		envFile = "../.env"
+	} else {
+		envFile = ".env"
 	}
 	err := godotenv.Load(envFile)
 	if err != nil {

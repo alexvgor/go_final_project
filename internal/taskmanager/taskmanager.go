@@ -2,7 +2,9 @@ package taskmanager
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -18,13 +20,20 @@ type TaskManagerInstance struct {
 
 var TaskManager TaskManagerInstance
 
-func Init(db database.Db) {
-	TaskManager = NewTaskManager(db)
-	slog.Info("taskmanager was inited")
+func init() {
+	db, err := database.Create()
+	if err != nil {
+		slog.Error(fmt.Sprintf("db connection for taskmanager was not created due to error - %s", err.Error()))
+		os.Exit(1)
+	} else {
+		slog.Debug("db connection was created for taskmanager")
+		TaskManager = TaskManagerInstance{db: db}
+		slog.Info("taskmanager was inited")
+	}
 }
 
-func NewTaskManager(db database.Db) TaskManagerInstance {
-	return TaskManagerInstance{db}
+func (tm TaskManagerInstance) Close() error {
+	return tm.db.Close()
 }
 
 func parseTaskIdAsString(task models.Task) models.ResponseTask {

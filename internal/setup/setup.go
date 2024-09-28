@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func Init() {
+func init() {
 	LoadEnv()
 	SetLogLevel(os.Getenv("LOG_LEVEL"))
 	slog.Info("setup was completed")

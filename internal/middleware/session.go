@@ -19,13 +19,9 @@ type SessionInstance struct {
 
 var Session *SessionInstance
 
-func Init() {
-	Session = NewSession()
+func init() {
+	Session = &SessionInstance{password: setup.GetSessionPassword(), secret: setup.GetSessionSecret()}
 	slog.Info("session middleware was inited")
-}
-
-func NewSession() *SessionInstance {
-	return &SessionInstance{password: setup.GetSessionPassword(), secret: setup.GetSessionSecret()}
 }
 
 func (session *SessionInstance) AuthenticationIsEnabled() bool {
