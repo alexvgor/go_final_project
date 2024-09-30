@@ -25,8 +25,8 @@ func (h *TasksHandler) Get() http.HandlerFunc {
 		if len(search) == 0 {
 			tasks, err = taskmanager.TaskManager.GetTasks()
 		} else {
-			date, date_err := time.Parse("02.01.2006", search)
-			if date_err == nil {
+			date, dateErr := time.Parse("02.01.2006", search)
+			if dateErr == nil {
 				tasks, err = taskmanager.TaskManager.GetTasksFilteredByDate(date.Format(setup.ParseDateFormat))
 			} else {
 				tasks, err = taskmanager.TaskManager.GetTasksFilteredByTitleOrComment(fmt.Sprintf("%%%s%%", search))

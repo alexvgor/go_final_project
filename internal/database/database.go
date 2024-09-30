@@ -17,18 +17,18 @@ type Db struct {
 	db *sql.DB
 }
 
-func create_table(db *sql.DB) error {
+func createTable(db *sql.DB) error {
 	_, err := db.Exec(`CREATE TABLE scheduler (id INTEGER PRIMARY KEY AUTOINCREMENT, date CHAR(8) NOT NULL DEFAULT "", title VARCHAR(256) NOT NULL DEFAULT "", comment VARCHAR(256) NOT NULL DEFAULT "", repeat VARCHAR(128) NOT NULL DEFAULT "")`)
 	if err != nil {
 		slog.Error(fmt.Sprintf("unable to create table - %s", err.Error()))
 		return err
 	}
 	slog.Debug("table 'scheduler' was created")
-	err = create_index(db)
+	err = createIndex(db)
 	return err
 }
 
-func create_index(db *sql.DB) error {
+func createIndex(db *sql.DB) error {
 	_, err := db.Exec("CREATE INDEX date ON scheduler (id)")
 	if err != nil {
 		slog.Error(fmt.Sprintf("unable to create index - %s", err.Error()))
@@ -51,20 +51,20 @@ func Create() (Db, error) {
 		shouldInitDB = true
 	}
 
-	db_connection, err := sql.Open("sqlite", dbFile)
+	dbConnection, err := sql.Open("sqlite", dbFile)
 	if err != nil {
 		slog.Error(fmt.Sprintf("unable to open db file - %s", err.Error()))
 		return db, err
 	}
 
 	if shouldInitDB {
-		err = create_table(db_connection)
+		err = createTable(dbConnection)
 		if err != nil {
 			return db, err
 		}
 	}
 
-	db.db = db_connection
+	db.db = dbConnection
 
 	return db, nil
 }
@@ -116,11 +116,11 @@ func (db Db) UpdateTask(task *models.Task) error {
 		slog.Error(fmt.Sprintf("unable to update task by id - %s", err.Error()))
 		return errors.New("задача не обнавлена")
 	}
-	rows_affected, err := res.RowsAffected()
+	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		slog.Error(fmt.Sprintf("unable to confirm that task was updated - %s", err.Error()))
 		return errors.New("ошибка подтверждения изменения")
-	} else if rows_affected == 0 {
+	} else if rowsAffected == 0 {
 		slog.Error("unable to confirm that task was updated")
 		return errors.New("обновление задачи не привело к изменениям")
 	}

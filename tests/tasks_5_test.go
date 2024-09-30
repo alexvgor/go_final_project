@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexvgor/go_final_project/internal/setup"
+	_ "github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,8 +40,6 @@ func getTasks(t *testing.T, search string) []map[string]string {
 }
 
 func TestTasks(t *testing.T) {
-
-	setup.LoadEnv()
 
 	db := openDB(t)
 	defer db.Close()

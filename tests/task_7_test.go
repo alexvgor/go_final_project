@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexvgor/go_final_project/internal/setup"
+	_ "github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,8 +21,6 @@ func notFoundTask(t *testing.T, id string) {
 }
 
 func TestDone(t *testing.T) {
-
-	setup.LoadEnv()
 
 	db := openDB(t)
 	defer db.Close()
@@ -57,8 +55,6 @@ func TestDone(t *testing.T) {
 }
 
 func TestDelTask(t *testing.T) {
-
-	setup.LoadEnv()
 
 	db := openDB(t)
 	defer db.Close()

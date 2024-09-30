@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func Init() {
+func init() {
 	LoadEnv()
 	SetLogLevel(os.Getenv("LOG_LEVEL"))
 	slog.Info("setup was completed")
@@ -35,4 +35,16 @@ func GetDbPath() string {
 		dbFile = filepath.Join(filepath.Dir(appPath), "scheduler.db")
 	}
 	return dbFile
+}
+
+func GetSessionSecret() string {
+	secret := os.Getenv("TODO_SECRET")
+	if len(secret) == 0 {
+		secret = Secret
+	}
+	return secret
+}
+
+func GetSessionPassword() string {
+	return os.Getenv("TODO_PASSWORD")
 }

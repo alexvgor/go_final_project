@@ -16,6 +16,7 @@ type ErrorsStruct struct {
 	UnableToDeleteTask    error
 	UnableToUpdateTask    error
 	UnableToSetTaskAsDone error
+	UnableToSignIn        error
 }
 
 var HandlerErrors = ErrorsStruct{
@@ -26,6 +27,7 @@ var HandlerErrors = ErrorsStruct{
 	UnableToDeleteTask:    errors.New("ошибка удаления задачи"),
 	UnableToUpdateTask:    errors.New("ошибка изменения задачи"),
 	UnableToSetTaskAsDone: errors.New("ошибка отметки о выполнении задачи"),
+	UnableToSignIn:        errors.New("ошибка авторизации"),
 }
 
 func Respond(w http.ResponseWriter, v any) {
@@ -36,6 +38,10 @@ func Respond(w http.ResponseWriter, v any) {
 func RespondJsonError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	json.NewEncoder(w).Encode(models.Response{Error: err.Error()})
+}
+
+func RespondErrorUnableToSignIn(w http.ResponseWriter, err error) {
+	RespondJsonError(w, errors.Join(HandlerErrors.UnableToSignIn, err))
 }
 
 func RespondErrorUnableToGetTasks(w http.ResponseWriter, err error) {
