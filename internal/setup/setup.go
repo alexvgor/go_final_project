@@ -25,7 +25,15 @@ func GetPort() int {
 }
 
 func GetDbPath() string {
+	dbFolder := os.Getenv("DOCKER_TODO_DBFOLDER")
 	dbFile := os.Getenv("TODO_DBFILE")
+	if len(dbFolder) != 0 {
+		if len(dbFile) == 0 {
+			dbFile = filepath.Join(dbFolder, "scheduler.db")
+		} else {
+			dbFile = filepath.Join(dbFolder, filepath.Base(dbFile))
+		}
+	}
 	if len(dbFile) == 0 {
 		appPath, err := os.Executable()
 		if err != nil {
