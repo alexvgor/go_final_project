@@ -10,12 +10,42 @@ import (
 	"github.com/alexvgor/go_final_project/internal/setup"
 )
 
-func NextDate(now time.Time, dateStrint string, repeatString string) (string, error) {
+func getWeekDay(now time.Time) int {
+	weekDay := int(now.Weekday())
+	if weekDay == 0 {
+		weekDay = 7
+	}
+	return weekDay
+}
+
+func getClosestWeekDay(repeatWeekDays []string, weekDay int) int64 {
+	var closestRepeatWeekDay int64
+	for _, day := range repeatWeekDays {
+		if repeatWeekDay, err := strconv.ParseInt(day, 10, 64); err == nil {
+			if repeatWeekDay < 1 || repeatWeekDay > 7 {
+				return 0
+			}
+			if int(repeatWeekDay) <= weekDay {
+				repeatWeekDay += 7
+			}
+			repeatWeekDay -= int64(weekDay)
+			if (closestRepeatWeekDay == 0) || (repeatWeekDay < closestRepeatWeekDay) {
+				closestRepeatWeekDay = repeatWeekDay
+			}
+		}
+	}
+	return closestRepeatWeekDay
+}
+
+func NextDate(now time.Time, dateString string, repeatString string) (string, error) {
 	if repeatString == "" {
 		return "", errors.New("правило для повтора не указано")
 	}
 
-	date, err := time.Parse(setup.ParseDateFormat, dateStrint)
+	date, err := time.Parse(setup.ParseDateFormat, dateString)
+
+	var parsedDate string
+
 	if err != nil {
 		return "", errors.New("исхоное время переданно в неверном формате")
 	}
@@ -27,42 +57,45 @@ func NextDate(now time.Time, dateStrint string, repeatString string) (string, er
 			return "", errors.New("недопустимое значение для переноса дней")
 		}
 		for {
-			date = date.AddDate(0, 0, days)
 			if date.After(now) {
-				break
+				parsedDate = date.Format(setup.ParseDateFormat)
+				if dateString < parsedDate {
+					break
+				}
 			}
+			date = date.AddDate(0, 0, days)
 		}
 	case repeatString == "y":
 		for {
-			date = date.AddDate(1, 0, 0)
 			if date.After(now) {
-				break
+				parsedDate = date.Format(setup.ParseDateFormat)
+				if dateString < parsedDate {
+					break
+				}
 			}
+			date = date.AddDate(1, 0, 0)
 		}
-
 	case strings.HasPrefix(repeatString, "w "):
-		weekDay := int(now.Weekday())
-		if weekDay == 0 {
-			weekDay = 7
-		}
 		repeatWeekDays := strings.Split(strings.TrimPrefix(repeatString, "w "), ",")
-		var closestRepeatWeekDay int64
-		for _, day := range repeatWeekDays {
-			if repeatWeekDay, err := strconv.ParseInt(day, 10, 64); err == nil {
-				if repeatWeekDay < 1 || repeatWeekDay > 7 {
-					return "", errors.New("недопустимое значение для переноса дней недели")
-				}
-				if int(repeatWeekDay) <= weekDay {
-					repeatWeekDay += 7
-				}
-				if closestRepeatWeekDay == 0 || repeatWeekDay < closestRepeatWeekDay {
-					closestRepeatWeekDay = repeatWeekDay
+
+		var closestWeekDay int64
+
+		for {
+			if date.After(now) {
+				parsedDate = date.Format(setup.ParseDateFormat)
+				if dateString < parsedDate {
+					break
 				}
 			}
+			closestWeekDay = getClosestWeekDay(repeatWeekDays, getWeekDay(date))
+			if closestWeekDay == 0 {
+				return "", errors.New("недопустимое значение для переноса дней недели")
+			}
+			date = date.AddDate(0, 0, int(closestWeekDay))
 		}
-		date = now.AddDate(0, 0, int(closestRepeatWeekDay)-weekDay)
 
 	case strings.HasPrefix(repeatString, "m "):
+
 		daysMonthData := strings.Split(strings.TrimPrefix(repeatString, "m "), " ")
 
 		var days []int
@@ -77,13 +110,11 @@ func NextDate(now time.Time, dateStrint string, repeatString string) (string, er
 
 		var monthes []int
 		if len(daysMonthData) < 2 {
-			for i := range 12 {
-				monthes = append(monthes, i+1)
-			}
+			monthes = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
 		} else {
 			monthesAsStrings := strings.Split(daysMonthData[1], ",")
-			for _, month := range monthesAsStrings {
-				if month, err := strconv.ParseInt(month, 10, 64); err == nil {
+			for _, monthAsString := range monthesAsStrings {
+				if month, err := strconv.ParseInt(monthAsString, 10, 64); err == nil {
 					if month < 1 || month > 12 {
 						return "", errors.New("недопустимое значение месяца для переноса дней месяца")
 					}
@@ -95,20 +126,20 @@ func NextDate(now time.Time, dateStrint string, repeatString string) (string, er
 
 		for {
 			for _, month := range monthes {
-
 				currentMonth := int(date.Month())
 				if currentMonth > month {
 					continue
 				} else if currentMonth < month {
-					date = date.AddDate(0, month-int(currentMonth), 0)
 					if date.Day() > 1 {
 						date = date.AddDate(0, 0, 1-date.Day())
 					}
+					date = date.AddDate(0, month-int(currentMonth), 0)
 				}
 
 				daysInMonthFrom := int(date.Day())
 				daysInMonth := time.Date(date.Year(), date.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
-				daysForThisMonth := days
+				daysForThisMonth := make([]int, len(days))
+				copy(daysForThisMonth, days)
 				for dayIndex := range daysForThisMonth {
 					if daysForThisMonth[dayIndex] == -1 {
 						daysForThisMonth[dayIndex] = daysInMonth
@@ -123,7 +154,10 @@ func NextDate(now time.Time, dateStrint string, repeatString string) (string, er
 						if dayInMonth == day {
 							date = date.AddDate(0, 0, day-date.Day())
 							if date.After(now) {
-								return date.Format(setup.ParseDateFormat), nil
+								parsedDate = date.Format(setup.ParseDateFormat)
+								if dateString < parsedDate {
+									return parsedDate, nil
+								}
 							}
 						} else if dayInMonth > day {
 							break
@@ -131,15 +165,15 @@ func NextDate(now time.Time, dateStrint string, repeatString string) (string, er
 					}
 				}
 			}
-			date = date.AddDate(0, (12-int(date.Month()))+monthes[0], 0)
 			if date.Day() > 1 {
 				date = date.AddDate(0, 0, 1-date.Day())
 			}
+			date = date.AddDate(0, (12-int(date.Month()))+monthes[0], 0)
 		}
 
 	default:
 		return "", errors.New("неверный формат правила повтора")
 	}
 
-	return date.Format(setup.ParseDateFormat), nil
+	return parsedDate, nil
 }
