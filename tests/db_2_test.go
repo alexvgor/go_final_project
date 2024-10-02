@@ -5,9 +5,12 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
+
+	// _ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
+	_ "modernc.org/sqlite"
 )
 
 type Task struct {
@@ -29,12 +32,13 @@ func openDB(t *testing.T) *sqlx.DB {
 	if len(envFile) > 0 {
 		dbfile = envFile
 	}
-	db, err := sqlx.Connect("sqlite3", dbfile)
+	db, err := sqlx.Connect("sqlite", dbfile)
 	assert.NoError(t, err)
 	return db
 }
 
 func TestDB(t *testing.T) {
+
 	db := openDB(t)
 	defer db.Close()
 

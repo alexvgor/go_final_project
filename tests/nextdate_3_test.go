@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/alexvgor/go_final_project/internal/setup"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,6 +18,7 @@ type nextDate struct {
 }
 
 func TestNextDate(t *testing.T) {
+
 	tbl := []nextDate{
 		{"20240126", "", ""},
 		{"20240126", "k 34", ""},

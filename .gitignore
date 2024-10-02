@@ -1,0 +1,5 @@
+**/.vscode
+.env
+**/scheduler.db
+**/TODO.md
+**/DB
